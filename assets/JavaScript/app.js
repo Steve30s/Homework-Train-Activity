@@ -1,3 +1,6 @@
+// You should try to get in the habit of wrapping your JS code within a document.ready block or 
+// some other kind of functional closure so that you don't pollute the global scope with your variables.
+
   // Initialize Firebase
   var config = {
     apiKey: "AIzaSyAMKrUjp-ATNkz3iRD_iRO6VnCrqyHw2cg",
@@ -10,6 +13,8 @@
   firebase.initializeApp(config);
   database = firebase.database();
 
+// I really really like how you broke out your logic into reusable functions!
+
 /* calcNextArrival                                 */
 /* Description: calculate next arrival time        */
 /* parameter: time - time of first train           */
@@ -21,8 +26,19 @@ function calcNextArrival(time, freq) {
 	console.log(moment(mTime).format('h:mm'));
 	//check if it has past, if yes, set new time
 	while (mTime.diff(moment(), 'm') <= 0) {
+
+		// Calling `.add` doesn't change the value of `mTime`
+		// In order to update `mTime` you'd need to assign the 
+		// return value of the add operation to mTime. You'd also
+		// need to wrap the `mTime` you're adding to in a `moment()` like so:
+		// mTime = moment(mTime).add(freq, 'm');
+
 		mTime.add(freq, 'm');
 	}
+
+	// Since the above while loop doesn't update `mTime`
+	// this ends up returning the original `time` value
+	// that's given to this function.
 	return mTime;
 }
 
@@ -60,7 +76,19 @@ function updateTable(name, dest, firstTime, freq ) {
 	var minuteAway = calcMinuteAway(mNextArrival);
 	var arrivalString = moment(mNextArrival).format("h:mmA");
 	// console.log(arrivalString);
-	entry = `<tr><td>${name}</td><td>${dest}</td><td class="td-freq">${freq}</td><td class="td-arrival">${arrivalString}</td><td class="td-away">${minuteAway}</td></tr>`;
+	// I like that you're using a template string here. In addition to the easy variable insertion
+	// it allows you to do I'd suggest also taking advantage of it's ability to be broken up across
+	// multiple lines so that your entry ends up appering more like html markup and less like a 
+	// realy long JS string.
+	entry = `
+		<tr>
+			<td>${name}</td>
+			<td>${dest}</td>
+			<td class="td-freq">${freq}</td>
+			<td class="td-arrival">${arrivalString}</td>
+			<td class="td-away">${minuteAway}</td>
+		</tr>
+	`;
 	$('#table-schedule > tbody').append(entry);
 
 }
@@ -69,10 +97,14 @@ function updateTable(name, dest, firstTime, freq ) {
 $('#add-train-btn').on('click', function(event) {
 	event.preventDefault();
 	//take user input
+	// Feel free to just declare these variables at the same time you assign them a value.
+	// For instance: `var name = $('#train-name-input').val().trim();`
 	var name;
 	var dest;
 	var firstTrainTime;
 	var frequency;
+	// Looks like you didn't end up using this variable anywhere in this function
+	// so it's safe to remove it.
 	var entry;
 
 	name = $('#train-name-input').val().trim();
